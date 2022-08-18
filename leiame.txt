@@ -1,0 +1,40 @@
+Projeto PyApiTemplate
+
+Objetivo
+Criar um template de API usando Python.
+
+Features
+Implementar os principais verbos HTTP:
+
+    * GET
+    * POST
+    * PUT
+    * DELETE
+    
+Devolver os principais status:
+
+    * 200
+    * 401
+    * 404
+    
+Requisitos
+
+    * Bibliotecas do Python
+    * Como vincular um repositório local do GIT com um remoto.
+    
+Observações
+
+    * Python command:
+        
+        $ python3 ...
+        
+    * PIP command:
+    
+        $ pip3
+        
+Links
+    The Right Way to Build an API with Python
+    https://towardsdatascience.com/the-right-way-to-build-an-api-with-python-cd08ab285f8f
+    
+    Instalando o flask
+    https://blog.geekhunter.com.br/flask-framework-python/
