@@ -6,6 +6,7 @@ Starting trying to implement the code over Manjaro Linux. Why Manjaro? Because I
 ## Links
 1. [Python SQL driver](https://docs.microsoft.com/en-us/sql/connect/python/python-driver-for-sql-server?view=sql-server-ver16)
 1. [Python SQL Driver - pymssql](https://docs.microsoft.com/en-us/sql/connect/python/pymssql/python-sql-driver-pymssql?view=sql-server-ver16)
+1. [POC with `pymssql`](https://docs.microsoft.com/en-us/sql/connect/python/pymssql/step-3-proof-of-concept-connecting-to-sql-using-pymssql?view=sql-server-ver16)
 
 ## Install `pymssql` on Manjaro Linux
 ```shell
