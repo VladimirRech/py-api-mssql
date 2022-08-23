@@ -1,20 +1,39 @@
+from http.server import HTTPServer
 from flask import Flask
 from flask_restful import Resource, Api, reqparse
 import pandas as pd
 import ast
+import pymssql
+from StudyTask import StudyTask, StudyTaskEncoder
+import json
 
 app = Flask(__name__)
 api = Api(app)
 
-
-# Classes
-class Users(Resource):
-    _usersFile = "./csv/users.csv"
+# api - use class to define
+class Tasks(Resource):
+    _usersFile = "./csv/users.csv"      # keep until finish mssql implementations
+    connDic = { 'server': 'localhost', 'user': 'sa', 'password': 'Cmaj7/#5', 'database': 'manjaro'}
 
     def get(self):
-        data = pd.read_csv(self._usersFile)  # read the csv file
-        data = data.to_dict()  # convert dataframe to dictionary
-        return {'data': data}, 200  # return data and 200 OK code.
+        conn = pymssql.connect(server = self.connDic['server'], user = self.connDic['user'], password = self.connDic['password'], database = self.connDic['database'])
+        cursor = conn.cursor()
+        cursor.execute('SELECT t.ID, t.TITLE, t.CREATION_DATE, t.UPDATE_DATE FROM tasks t where t.REMOVED = 0 order by t.ID desc;')
+
+        lst = []
+        row = cursor.fetchone()
+
+        while row:
+            obj = StudyTask()
+            obj.id = row[0]
+            obj.title = row[1]
+            obj.creation_date = row[2]
+            obj.update_date = row[3]
+            lst.append(obj)
+            row = cursor.fetchone()
+        
+        ret = json.dumps(lst, cls=StudyTaskEncoder)
+        return {'data': ret}, 200
 
     def post(self):
         parser = reqparse.RequestParser()  # initialize
@@ -102,14 +121,8 @@ class Users(Resource):
             }, 404
 
 
-class Locations(Resource):
-    pass
-
-
-# '/users' is our entry point for Users
-api.add_resource(Users, '/users')
-# '/locations' is our entry point for Locations
-api.add_resource(Locations, '/locations')
+# '/tasks' is our entry point for Tasks
+api.add_resource(Tasks, '/tasks')
 
 # Control the app run and start
 if __name__ == '__main__':
