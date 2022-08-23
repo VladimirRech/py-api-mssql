@@ -15,14 +15,14 @@ class StudyTask:
         self.title = ''
         self.removed = False
         self.notes = ''
-        self.due_date = datetime.datetime.now()
+        self.due_date = None
 
 # JSON serializer to class
 class StudyTaskEncoder(JSONEncoder):
     # Overwriting default serializer
     def default(self, obj):
         # for datetime serialization
-        if isinstance(o, datetime.datetime):
+        if isinstance(obj, datetime.datetime):
             return obj.isoformat()
 
         return obj.__dict__
