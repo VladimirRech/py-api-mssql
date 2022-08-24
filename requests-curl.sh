@@ -10,7 +10,6 @@ curl -d '{ "title": "Python API test", "notes": "Implementing a SQL Server datab
 curl -d "userId=321&name=Vlad&city=Transilvania" -X POST http://localhost:5000/users
 
 # put location
-curl -d "userId=321&location=0007" -X PUT http://localhost:5000/users
-
+curl -d '{ "id": 1010, "title": "Python API test2", "notes": "Implementing a SQL Server database based Python API-2", "due_date": "2022-08-24" }' -H 'Content-Type: application/json' -X PUT http://localhost:5000/tasks -v
 # delete
 curl -d "userId=321" -X DELETE http://localhost:5000/users
