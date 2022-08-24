@@ -72,27 +72,18 @@ class Tasks(Resource):
         dict['message'] = 'Updated successfully'
         return { 'data': dict }, 200
 
+    # mark a record as removed
+    # requires: id
     def delete(self):
         parser = reqparse.RequestParser()
-        parser.add_argument('userId', required=True)
+        parser.add_argument('id', required=True)
         args = parser.parse_args()
+        dic = { 'id': args['id'] }
+        studyTaskSql = StudyTaskSql(self.connDic, dic)
+        studyTaskSql.remove()
+        dic['message'] = 'Record removed successfully'
+        return { 'data': dic }, 200
 
-        data = pd.read_csv(self._usersFile)
-
-        if args['userId'] in list(data['userId']):
-            # remove data entry matching given userId
-            data = data[data['userId'] != args['userId']]
-
-            # save back to CSV
-            data.to_csv(self._usersFile, index=False)
-
-            # return data and 200 OK
-            return {'data': data.to_dict()}, 200
-
-        else:
-            return {
-                'message': f"'{ args['userId'] }' user not found."
-            }, 404
 
 
 # '/tasks' is our entry point for Tasks
