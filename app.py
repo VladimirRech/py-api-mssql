@@ -1,16 +1,19 @@
 from http.server import HTTPServer
+from typing_extensions import Required
 from flask import Flask
 from flask_restful import Resource, Api, reqparse
 import pandas as pd
 import ast
 import pymssql
 from StudyTask import StudyTask, StudyTaskEncoder
+from StudyTaskSql import StudyTaskSql
 import json
 
 app = Flask(__name__)
 api = Api(app)
 
 # api - use class to define
+# local url: http://127.0.0.1:5000/tasks
 class Tasks(Resource):
     _usersFile = "./csv/users.csv"      # keep until finish mssql implementations
     connDic = { 'server': 'localhost', 'user': 'sa', 'password': 'Cmaj7/#5', 'database': 'manjaro'}
@@ -18,7 +21,7 @@ class Tasks(Resource):
     def get(self):
         conn = pymssql.connect(server = self.connDic['server'], user = self.connDic['user'], password = self.connDic['password'], database = self.connDic['database'])
         cursor = conn.cursor()
-        cursor.execute('SELECT t.ID, t.TITLE, t.CREATION_DATE, t.UPDATE_DATE FROM tasks t where t.REMOVED = 0 order by t.ID desc;')
+        cursor.execute('SELECT t.ID, t.TITLE, t.CREATION_DATE, t.UPDATE_DATE, t.NOTES FROM tasks t where t.REMOVED = 0 order by t.ID desc;')
 
         lst = []
         row = cursor.fetchone()
@@ -29,42 +32,29 @@ class Tasks(Resource):
             obj.title = row[1]
             obj.creation_date = row[2]
             obj.update_date = row[3]
+            obj.notes = row[4]
             lst.append(obj)
             row = cursor.fetchone()
         
         ret = json.dumps(lst, cls=StudyTaskEncoder)
         return {'data': ret}, 200
 
+    # Insert new record.
     def post(self):
+        # object parser bellow
         parser = reqparse.RequestParser()  # initialize
 
-        parser.add_argument('userId', required=True)
-        parser.add_argument('name', required=True)
-        parser.add_argument('city', required=True)
-
-        args = parser.parse_args()  # parse argumentos to dictionary
-
-        # read our CSV
-        data = pd.read_csv(self._usersFile)  # read the csv file
-
-        if args['userId'] in list(data['userId']):
-            return {
-                'message': f"'{args['userId']}' already exists."
-            }, 401
-        else:
-            # create new data frame containing new values
-            new_data = pd.DataFrame({
-                'userId': args['userId'],
-                'name': args['name'],
-                'city': args['city'],
-                'locations': [[]]
-            })
-
-            # add the newly provided values
-            data = data.append(new_data, ignore_index=True)
-            # save back to CSV
-            data.to_csv('./csv/users.csv', index=False)
-            return {'data': data.to_dict()}, 200  # return data with 200 OK
+        # parse arguments from JSON
+        parser.add_argument('title', required=True)
+        parser.add_argument('notes', required=True)
+        parser.add_argument('due_date', required=False)
+        # parse argumentos to dictionary
+        args = parser.parse_args()  
+        dict = { 'title': args['title'], 'notes': args['notes'], 'due_date': args['due_date'], 'message': 'Request received'}
+        studyTaskSql = StudyTaskSql(self.connDic, dict)
+        studyTaskSql.Create()
+        dict['message'] = 'Record inserted'
+        return { 'data': dict }, 200
 
     def put(self):
         parser = reqparse.RequestParser()
