@@ -3,7 +3,6 @@ from typing_extensions import Required
 from flask import Flask
 from flask_restful import Resource, Api, reqparse
 import pandas as pd
-import ast
 import pymssql
 from StudyTask import StudyTask, StudyTaskEncoder
 from StudyTaskSql import StudyTaskSql
@@ -21,7 +20,7 @@ class Tasks(Resource):
     def get(self):
         conn = pymssql.connect(server = self.connDic['server'], user = self.connDic['user'], password = self.connDic['password'], database = self.connDic['database'])
         cursor = conn.cursor()
-        cursor.execute('SELECT t.ID, t.TITLE, t.CREATION_DATE, t.UPDATE_DATE, t.NOTES FROM tasks t where t.REMOVED = 0 order by t.ID desc;')
+        cursor.execute('SELECT t.ID, t.TITLE, t.CREATION_DATE, t.UPDATE_DATE, t.NOTES, t.DUE_DATE FROM tasks t where t.REMOVED = 0 order by t.ID desc;')
 
         lst = []
         row = cursor.fetchone()
@@ -33,6 +32,7 @@ class Tasks(Resource):
             obj.creation_date = row[2]
             obj.update_date = row[3]
             obj.notes = row[4]
+            obj.due_date = row[5]
             lst.append(obj)
             row = cursor.fetchone()
         
@@ -56,37 +56,21 @@ class Tasks(Resource):
         dict['message'] = 'Record inserted'
         return { 'data': dict }, 200
 
+    # update one record
+    # requires: id, title, notes, due_date
     def put(self):
         parser = reqparse.RequestParser()
-        parser.add_argument('userId', required=True)
-        parser.add_argument('location', required=True)
-        args = parser.parse_args()
-
-        data = pd.read_csv(self._usersFile)
-
-        if args['userId'] in list(data['userId']):
-            # evaluate string of lists to lists
-            data['locations'] = data['locations'].apply(
-                lambda x: ast.literal_eval(x)
-            )
-
-            data[data['userId'] == args['userId']].delete()
-
-            # update users location
-            user_data['locations'] = user_data['locations'].values[0].append(
-                args['location'])
-
-            # save back to CSV
-            data.to_csv(self._usersFile, index=False)
-
-            # return data and 200 OK
-            return {'data': data.to_dict()}, 200
-
-        else:
-            # otherwise user does not exist
-            return {
-                'message': f"'{ args['userId'] }' user not found."
-            }, 404
+        parser.add_argument('id', required=True)
+        parser.add_argument('title', required=True)
+        parser.add_argument('notes', required=True)
+        parser.add_argument('due_date', required=True)
+        # parse argumentos to dictionary
+        args = parser.parse_args()  
+        dict = { 'id': args['id'], 'title': args['title'], 'notes': args['notes'], 'due_date': args['due_date'], 'message': 'Request received' }
+        studyTaskSql = StudyTaskSql(self.connDic, dict)
+        studyTaskSql.update()
+        dict['message'] = 'Updated successfully'
+        return { 'data': dict }, 200
 
     def delete(self):
         parser = reqparse.RequestParser()
