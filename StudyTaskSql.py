@@ -8,8 +8,8 @@ class StudyTaskSql:
     def __init__(self, dicConn, dicParams):
         self.DicConn = dicConn
         self.StudyTask = StudyTask()
-        self.StudyTask.title = dicParams['title']
-        self.StudyTask.notes = dicParams['notes']
+        self.StudyTask.title = dicParams.get('title')
+        self.StudyTask.notes = dicParams.get('notes')
 
         if dicParams.get('id') != None:
             self.StudyTask.id = int(dicParams['id'])
@@ -17,7 +17,7 @@ class StudyTaskSql:
             self.StudyTask.id = 0
 
         # Parsing due_date parameter properly
-        if dicParams['due_date'] == '':
+        if dicParams.get('due_date') == None or dicParams['due_date'] == '':
             self.due_date = None
         else:
             self.due_date = "'{0}'".format(dicParams['due_date'])
@@ -48,3 +48,13 @@ class StudyTaskSql:
         cursor.execute(sql)
         conn.commit()
         conn.close()
+
+    def remove(self):
+        sql = "update tasks set removed = 1 where ID = {0}".format(self.StudyTask.id)
+        print(sql)
+        conn = pymssql.connect(server = self.DicConn['server'], user = self.DicConn['user'], password = self.DicConn['password'], database = self.DicConn['database'])
+        cursor = conn.cursor()
+        cursor.execute(sql)
+        conn.commit()
+        conn.close()
+
