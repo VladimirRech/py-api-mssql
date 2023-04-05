@@ -1,12 +1,12 @@
-from http.server import HTTPServer
-from typing_extensions import Required
-from flask import Flask
+from http.server import HTTPServer                          # Servidor HTTP
+from typing_extensions import Required                      # Parameters parse - Required
+from flask import Flask                                     # Main entrypoint engine
 from flask_restful import Resource, Api, reqparse
-import pandas as pd
-import pymssql
-from StudyTask import StudyTask, StudyTaskEncoder
-from StudyTaskSql import StudyTaskSql
-import json
+#import pandas as pd
+import pymssql                                              # SQL Server driver
+from StudyTask import StudyTask, StudyTaskEncoder           # Classes
+from StudyTaskSql import StudyTaskSql                       # SQL classes
+import json                                                 # JSON parser
 
 app = Flask(__name__)
 api = Api(app)
